@@ -4,7 +4,6 @@ import (
 	"AUTH/src/database"
 	"AUTH/src/models"
 	"AUTH/src/utils"
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -17,15 +16,19 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	var foundOne models.User
-	if err := database.DB.Where("username = ? AND password = ?", loginReq.Username, loginReq.Password).First(&foundOne).Error; err != nil {
+	user, err := findLoginUser(loginReq.Username, loginReq.Password)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve user"})
+		return
+	}
+
+	if user == nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return
 	}
 
-	token, err := utils.GenerateJWT(foundOne.Username)
+	token, err := utils.GenerateJWT(user.Username)
 	if err != nil {
-		log.Fatal(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
 		return
 	}

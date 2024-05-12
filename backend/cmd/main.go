@@ -5,6 +5,7 @@ import (
 	"AUTH/src/handlers"
 	"AUTH/src/middleware"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -17,6 +18,9 @@ func main() {
 
 func initRouter() *gin.Engine {
 	router := gin.Default()
+
+	router.Use(cors.Default())
+
 	api := router.Group("/api")
 	{
 		api.POST("/login", handlers.Login)

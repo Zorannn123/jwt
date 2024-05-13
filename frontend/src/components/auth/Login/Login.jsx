@@ -2,13 +2,13 @@ import React, { useState } from 'react'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom';
 
-export const Login = () => {
+export const Login = ({ logState }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
 
-    const handleLogin = async (e) => {
-        e.preventDefault();
+    const handleLogin = async () => {
+
 
         try {
             const response = await axios.post('http://localhost:8080/api/login', {
@@ -23,7 +23,9 @@ export const Login = () => {
 
                 setErrorMessage('');
                 handleLoginSuccessfulClick();
+                logState();
                 window.alert('Login successful!');
+
             } else {
                 console.error("Token not found in the response");
                 setErrorMessage("Token not found in the response");

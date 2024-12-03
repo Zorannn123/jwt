@@ -29,6 +29,8 @@ func Connect() {
 }
 
 func Migrate() {
-	DB.AutoMigrate(&models.User{})
-	log.Println("Database Migration Completed")
+	err := DB.AutoMigrate(&models.User{})
+	if err != nil{
+		log.Fatal("Migration failed: %v", err)
+	}
 }

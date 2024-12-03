@@ -1,0 +1,27 @@
+.container {
+    border: 1px solid gray;
+    border-radius: 10px;
+    margin: auto;
+    margin-bottom: 20%;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    background-color: #B99B6B;
+    border: 1px solid #F8F0E5;
+}
+
+.btn {
+    background-color: #AA5656;
+    border: none;
+    padding: 10px 20px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+}
+
+.back {
+    background-color: #698269;
+    height: 100vh;
+    display: flex;
+}

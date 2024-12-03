@@ -43,6 +43,23 @@ func Register(c *gin.Context) {
 		return
 	}
 
+	existingUser, err := checkUsername(user.Username)
+
+	if err != nil{
+		c.JSON(http.StatusInternalServerError, gin.H{"error" : "Failed to check username"})
+		return
+	}
+
+	if existingUser != nil{
+		c.JSON(http.StatusConflict, gin.H{"error" : "Username already exists"})
+		return
+	}
+
+	if err := user.HashPassword(user.Password); err != nil{
+		c.JSON(http.StatusInternalServerError, gin.H{"error" : "Failed to hash password"})
+		return
+	}
+
 	if err := database.DB.Create(&user).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to register"})
 		return

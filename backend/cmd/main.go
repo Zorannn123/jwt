@@ -21,15 +21,18 @@ func initRouter() *gin.Engine {
 	router := gin.Default()
 
 	router.Use(cors.New(cors.Config{
-		AllowAllOrigins: true,
+		AllowOrigins: 	 []string{"http://localhost:3000"},
 		AllowMethods:    []string{"OPTIONS", "GET", "PUT", "POST", "DELETE", "PATCH"},
 		AllowHeaders:    []string{"Origin", "Content-Length", "Content-Type", "Authorization"},
+		AllowCredentials: true,
 		MaxAge:          time.Hour * 24,
 	}))
 
 	api := router.Group("/api")
 	{
 		api.POST("/login", handlers.Login)
+		api.GET("/dropbox_login", handlers.HandleDropboxLogin)
+		api.GET("/auth/callback", handlers.HandleDropboxCallback)
 		api.POST("/register", handlers.Register)
 		secured := api.Group("/secured").Use(middleware.AuthenticationMiddleware())
 		{

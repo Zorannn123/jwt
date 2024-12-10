@@ -2,11 +2,15 @@ package handlers
 
 import (
 	"AUTH/src/database"
+	"AUTH/src/dropbox"
 	"AUTH/src/models"
 	"AUTH/src/utils"
+	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"golang.org/x/oauth2"
 )
 
 func Login(c *gin.Context) {
@@ -66,4 +70,37 @@ func Register(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, gin.H{"message": "Registration successful"})
+}
+
+func HandleDropboxLogin(c *gin.Context) {
+	authURL := dropbox.DropboxConfig.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
+
+	c.JSON(http.StatusOK, gin.H{"authURL": authURL})
+	fmt.Println("Auth URL: ", authURL)
+}
+
+func HandleDropboxCallback(c *gin.Context) {
+	code := c.DefaultQuery("code", "")
+	fmt.Println("code ", code)
+	if code == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No code in the callback request"})
+		return
+	} 
+
+	token, err := dropbox.DropboxConfig.Exchange(context.Background(), code)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to exchange token", "details": err.Error()})
+		return
+	}
+	fmt.Println("token ", token.AccessToken)
+	fmt.Println("url ", dropbox.DropboxConfig.RedirectURL)
+
+	// c.SetCookie("access_token", token.AccessToken, 3600, "/", "localhost", false, true);
+
+	//c.Redirect(http.StatusFound, "http://localhost:3000/");
+	//TODO: store in database and check refresh for access token
+	c.JSON(http.StatusOK, gin.H{
+		"access_token": token.AccessToken,
+	})
+
 }

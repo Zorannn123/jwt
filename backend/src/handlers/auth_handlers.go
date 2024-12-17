@@ -73,13 +73,15 @@ func Register(c *gin.Context) {
 }
 
 func HandleDropboxLogin(c *gin.Context) {
-	authURL := dropbox.DropboxConfig.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
+	authURL := dropbox.DropboxConfig.AuthCodeURL("state-token", oauth2.SetAuthURLParam("token_access_type", "offline"))
 
 	c.JSON(http.StatusOK, gin.H{"authURL": authURL})
 	fmt.Println("Auth URL: ", authURL)
 }
 
 func HandleDropboxCallback(c *gin.Context) {
+	var dropboxToken models.Token
+
 	code := c.DefaultQuery("code", "")
 	fmt.Println("code ", code)
 	if code == "" {
@@ -92,15 +94,57 @@ func HandleDropboxCallback(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to exchange token", "details": err.Error()})
 		return
 	}
-	fmt.Println("token ", token.AccessToken)
-	fmt.Println("url ", dropbox.DropboxConfig.RedirectURL)
 
-	// c.SetCookie("access_token", token.AccessToken, 3600, "/", "localhost", false, true);
+	accountID := token.Extra("account_id").(string)
+	accessToken := token.AccessToken
+	refreshToken := token.RefreshToken
+	expiryTime := token.Expiry
+	typeToken := token.TokenType
+	userID := token.Extra("uid").(string)
 
-	//c.Redirect(http.StatusFound, "http://localhost:3000/");
+	var existingUser models.Token
+
+	if err := database.DB.Where("user_id = ? AND account_id = ?", userID, accountID).First(&existingUser).Error; err != nil{
+		if err.Error() == "record not found" {
+			dropboxToken = models.Token{
+				AccountID: accountID,
+				AccessToken: accessToken,
+				RefreshToken: refreshToken,
+				ExpiryTime: expiryTime,
+				TokenType: typeToken,
+				UserID: userID,
+			}
+			if err := database.DB.Create(&dropboxToken).Error; err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to store token"})
+				return
+			}
+		}else{
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Database query failed", "details": err.Error()})
+			return
+		}
+	}else{
+		existingUser.AccessToken = accessToken
+		existingUser.RefreshToken = refreshToken
+		existingUser.ExpiryTime = expiryTime
+
+		if err := database.DB.Save(&existingUser).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update token"})
+			return
+		}
+	}
+
+	jwt, err := utils.GenerateJWT(accessToken)
+	if err != nil{
+		c.JSON(http.StatusInternalServerError, gin.H{"error" : "Failed to generate token"})
+	}
+	fmt.Println("jwt \n", jwt)
+	fmt.Println("acc token ", token.AccessToken)
+
+	c.SetCookie("access_token", jwt, 3600, "/", "localhost", false, false);
+	if err := GetCurrentUser(accessToken); err != nil{
+		fmt.Println("Error:", err)
+	}
+
+	c.Redirect(http.StatusFound, "http://localhost:3000/");
 	//TODO: store in database and check refresh for access token
-	c.JSON(http.StatusOK, gin.H{
-		"access_token": token.AccessToken,
-	})
-
 }

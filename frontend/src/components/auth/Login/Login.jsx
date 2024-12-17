@@ -7,7 +7,6 @@ export const Login = ({ logState }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-
   const handleLogin = async () => {
     try {
       const response = await axios.post("http://localhost:8080/api/login", {
@@ -36,26 +35,6 @@ export const Login = ({ logState }) => {
           : errorMessage.message
       );
       setErrorMessage("Login failed. Please check your credentials.");
-    }
-  };
-
-  const handleDropboxClick = async () => {
-    try {
-      const response = await axios.get(
-        "http://localhost:8080/api/dropbox_login"
-      );
-
-      if (response.status === 200 && response.data.authURL) {
-        window.location.href = response.data.authURL;
-      } else if (response.status !== 200) {
-        console.error(`Unexpected status code: ${response.status}`);
-        alert("Unexpected response from server. Please try again.");
-      } else {
-        console.error("Authorization URL not found in response.");
-      }
-    } catch (err) {
-      console.error("Error initiating Dropbox login:", err.message);
-      alert("Failed to initiate Dropbox login. Please try again.");
     }
   };
 
@@ -108,7 +87,6 @@ export const Login = ({ logState }) => {
             Sign up
           </a>
         </div>
-        <button onClick={handleDropboxClick}>Dropbox</button>
       </div>
     </div>
   );

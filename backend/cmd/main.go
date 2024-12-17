@@ -2,6 +2,7 @@ package main
 
 import (
 	"AUTH/src/database"
+	"AUTH/src/dropbox"
 	"AUTH/src/handlers"
 	"AUTH/src/middleware"
 	"time"
@@ -33,6 +34,7 @@ func initRouter() *gin.Engine {
 		api.POST("/login", handlers.Login)
 		api.GET("/dropbox_login", handlers.HandleDropboxLogin)
 		api.GET("/auth/callback", handlers.HandleDropboxCallback)
+		api.GET("/folders", dropbox.GetDropboxFolders)
 		api.POST("/register", handlers.Register)
 		secured := api.Group("/secured").Use(middleware.AuthenticationMiddleware())
 		{

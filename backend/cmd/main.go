@@ -32,9 +32,12 @@ func initRouter() *gin.Engine {
 	api := router.Group("/api")
 	{
 		api.POST("/login", handlers.Login)
-		api.GET("/dropbox_login", handlers.HandleDropboxLogin)
 		api.GET("/auth/callback", handlers.HandleDropboxCallback)
-		api.GET("/folders", dropbox.GetDropboxFolders)
+		api.GET("/dropbox_login", handlers.HandleDropboxLogin)
+		api.GET("/folders", func(c *gin.Context) {
+			path := c.Query("path") 
+			dropbox.GetDropboxFolders(c, path) 
+		})
 		api.POST("/register", handlers.Register)
 		secured := api.Group("/secured").Use(middleware.AuthenticationMiddleware())
 		{

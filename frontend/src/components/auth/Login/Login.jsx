@@ -1,39 +1,30 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import styles from "./Login.module.css";
+import { loginUser } from "../../../services/userService/userService";
 
 export const Login = ({ logState }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+
+  //LOGIN USER
   const handleLogin = async () => {
     try {
-      const response = await axios.post("http://localhost:8080/api/login", {
-        username: username,
-        password: password,
-      });
-
       localStorage.clear();
-      const token = response.data.token;
+      const data = await loginUser(username, password);
+      const token = data.token;
       if (token) {
-        localStorage.setItem("userToken", token);
-
+        localStorage.setItem("authToken", token);
         setErrorMessage("");
         handleLoginSuccessfulClick();
         logState();
-        window.alert("Login successful!");
       } else {
-        console.error("Token not found in the response");
-        setErrorMessage("Token not found in the response");
+        console.error("Token not found in the response.");
+        setErrorMessage("Token not found in the response.");
       }
-    } catch (err) {
-      console.error(
-        "Login failed:",
-        errorMessage.response
-          ? errorMessage.response.data
-          : errorMessage.message
-      );
+    } catch (error) {
+      console.error("Login failed:", error);
       setErrorMessage("Login failed. Please check your credentials.");
     }
   };

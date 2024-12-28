@@ -13,7 +13,7 @@ func AuthenticationMiddleware() gin.HandlerFunc {
 		if tokenString == "" {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "request does not contain an access token"})
 			c.Abort()
-			return
+			return 
 		}
 
 		err := utils.ValidateToken(tokenString)

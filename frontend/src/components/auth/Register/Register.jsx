@@ -1,6 +1,7 @@
 import axios from "axios";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { registerUser } from "../../../services/userService/userService";
 
 export const Register = () => {
   const [username, setUsername] = useState("");
@@ -9,23 +10,17 @@ export const Register = () => {
 
   const handleRegister = async () => {
     try {
-      const response = await axios.post("http://localhost:8080/api/register", {
-        username: username,
-        password: password,
-      });
-
-      const successMessage = response.data;
-      console.log(successMessage);
+      const data = await registerUser(username, password);
+      console.log(data);
       setErrorMessage("");
       hanldeRegisterSuccessfulClick();
-      window.alert("Registration successful!");
-    } catch (err) {
-      if (err.response && err.response.status === 409) {
-        setErrorMessage("Username already exists. Please choose another.");
+    } catch (error) {
+      if (error.response && error.response.status === 409) {
+        setErrorMessage("Username already exists.");
+        return;
       } else {
         setErrorMessage("Registration failed. Please check your credentials.");
       }
-      console.error("Registration failed", err);
     }
   };
 

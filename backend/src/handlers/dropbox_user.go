@@ -36,7 +36,7 @@ func GetCurrentUser(accessToken string) error {
 		return fmt.Errorf("failed to decode response: %v", err)
 	}
 
-	fmt.Printf("curr user %v\n", result)
+	//fmt.Printf("curr user %v\n", result)
 	return nil
 }
 

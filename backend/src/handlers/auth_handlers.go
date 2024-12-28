@@ -76,14 +76,12 @@ func HandleDropboxLogin(c *gin.Context) {
 	authURL := dropbox.DropboxConfig.AuthCodeURL("state-token", oauth2.SetAuthURLParam("token_access_type", "offline"))
 
 	c.JSON(http.StatusOK, gin.H{"authURL": authURL})
-	fmt.Println("Auth URL: ", authURL)
 }
 
 func HandleDropboxCallback(c *gin.Context) {
 	var dropboxToken models.Token
 
 	code := c.DefaultQuery("code", "")
-	fmt.Println("code ", code)
 	if code == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "No code in the callback request"})
 		return
@@ -137,14 +135,10 @@ func HandleDropboxCallback(c *gin.Context) {
 	if err != nil{
 		c.JSON(http.StatusInternalServerError, gin.H{"error" : "Failed to generate token"})
 	}
-	fmt.Println("jwt \n", jwt)
-	fmt.Println("acc token ", token.AccessToken)
-
 	c.SetCookie("access_token", jwt, 3600, "/", "localhost", false, false);
 	if err := GetCurrentUser(accessToken); err != nil{
 		fmt.Println("Error:", err)
 	}
 
 	c.Redirect(http.StatusFound, "http://localhost:3000/");
-	//TODO: store in database and check refresh for access token
 }
